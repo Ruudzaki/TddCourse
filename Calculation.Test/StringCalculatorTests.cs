@@ -1,5 +1,4 @@
-﻿using System;
-using Calculation.CustomExceptions;
+﻿using Calculation.CustomExceptions;
 using NUnit.Framework;
 
 namespace Calculation.Test
@@ -7,18 +6,17 @@ namespace Calculation.Test
     [TestFixture]
     public class StringCalculatorTests
     {
-
         private StringCalculator CreateCalc()
         {
-            return new StringCalculator();
+            return new();
         }
 
         [Test]
         public void Add_EmptyString_ReturnsDefaultValue()
         {
-            StringCalculator stringCalculator = CreateCalc();
+            var stringCalculator = CreateCalc();
 
-            int result = stringCalculator.Add("");
+            var result = stringCalculator.Add("");
 
             Assert.AreEqual(0, result);
         }
@@ -27,7 +25,7 @@ namespace Calculation.Test
         [TestCase("2", ExpectedResult = 2)]
         public int Add_SingleNumber_ReturnsThatNumber(string input)
         {
-            StringCalculator stringCalculator = CreateCalc();
+            var stringCalculator = CreateCalc();
 
             return stringCalculator.Add(input);
         }
@@ -36,7 +34,7 @@ namespace Calculation.Test
         [TestCase("1,3", ExpectedResult = 4)]
         public int Add_TwoNumbers_ReturnsSum(string input)
         {
-            StringCalculator stringCalculator = CreateCalc();
+            var stringCalculator = CreateCalc();
 
             return stringCalculator.Add(input);
         }
@@ -45,7 +43,7 @@ namespace Calculation.Test
         [TestCase("1,2,3,4", ExpectedResult = 10)]
         public int Add_SeveralNumbers_ReturnsSum(string input)
         {
-            StringCalculator stringCalculator = CreateCalc();
+            var stringCalculator = CreateCalc();
 
             return stringCalculator.Add(input);
         }
@@ -53,7 +51,7 @@ namespace Calculation.Test
         [TestCase("1\n2,3", ExpectedResult = 6)]
         public int Add_SeveralNumbersWithNewLineSeparator_ReturnsSum(string input)
         {
-            StringCalculator stringCalculator = CreateCalc();
+            var stringCalculator = CreateCalc();
 
             return stringCalculator.Add(input);
         }
@@ -62,7 +60,7 @@ namespace Calculation.Test
         [TestCase("//.\n1.2.3", ExpectedResult = 6)]
         public int Add_CustomDelimiter_ReturnsSum(string input)
         {
-            StringCalculator stringCalculator = CreateCalc();
+            var stringCalculator = CreateCalc();
 
             return stringCalculator.Add(input);
         }
@@ -71,18 +69,19 @@ namespace Calculation.Test
         [TestCase("-2")]
         public void Add_NegativeNumber_ThrowsExceptionWithNegativeNumberInMessage(string input)
         {
-            StringCalculator stringCalculator = CreateCalc();
+            var stringCalculator = CreateCalc();
 
             var e = Assert.Catch<NegativeException>(() => stringCalculator.Add(input));
             StringAssert.Contains($"negatives not allowed: {input}", e.Message);
         }
 
         [TestCase("-1,2", "-1")]
-        [TestCase("-1,-2","-1 -2")]
+        [TestCase("-1,-2", "-1 -2")]
         [TestCase("-1,2,-3", "-1 -3")]
-        public void Add_SeveralNegativeNumbers_ThrowsExceptionWithNegativeNumbersInMessage(string input, string expected)
+        public void Add_SeveralNegativeNumbers_ThrowsExceptionWithNegativeNumbersInMessage(string input,
+            string expected)
         {
-            StringCalculator stringCalculator = CreateCalc();
+            var stringCalculator = CreateCalc();
 
             var e = Assert.Catch<NegativeException>(() => stringCalculator.Add(input));
             StringAssert.Contains($"negatives not allowed: {expected}", e.Message);
@@ -91,7 +90,7 @@ namespace Calculation.Test
         [TestCase("1,1")]
         public void GetCalledCount_RaisedNumberOfAdd_ReturnsCount(string input)
         {
-            StringCalculator stringCalculator = CreateCalc();
+            var stringCalculator = CreateCalc();
             Assert.AreEqual(0, stringCalculator.GetCalledCount());
 
             stringCalculator.Add(input);
@@ -107,11 +106,11 @@ namespace Calculation.Test
         [TestCase("1,1")]
         public void AddOccured_Add_EventRaisedWithInputAndResult(string input)
         {
-            StringCalculator stringCalculator = CreateCalc();
+            var stringCalculator = CreateCalc();
 
             string givenInput = null;
-            int givenResult = 0;
-            stringCalculator.AddOccurred += delegate (string input, int result)
+            var givenResult = 0;
+            stringCalculator.AddOccurred += delegate(string input, int result)
             {
                 givenInput = input;
                 givenResult = result;

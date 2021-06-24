@@ -8,8 +8,8 @@ namespace Calculation
     public class StringCalculator
     {
         private const int DEFAULT_VALUE = 0;
-        private int count = 0;
-        private HashSet<char> delimiters = new HashSet<char>();
+        private int count;
+        private readonly HashSet<char> delimiters = new();
 
         public event Action<string, int> AddOccurred;
 
@@ -53,12 +53,9 @@ namespace Calculation
 
         private int Sum(int[] numbers)
         {
-            int sum = 0;
+            var sum = 0;
 
-            foreach (var number in numbers)
-            {
-                sum += number;
-            }
+            foreach (var number in numbers) sum += number;
 
             return sum;
         }
@@ -67,13 +64,9 @@ namespace Calculation
         {
             string[] splitNumbers;
             if (HasDelimiter(numbers))
-            {
                 splitNumbers = numbers.Split(delimiters.ToArray());
-            }
             else
-            {
                 splitNumbers = new[] {numbers};
-            }
 
             return splitNumbers;
         }
@@ -106,18 +99,11 @@ namespace Calculation
 
         private void CheckForNegativeNumbers(int[] numbers)
         {
-            string negativeNumbers = "";
+            var negativeNumbers = "";
             foreach (var number in numbers)
-            {
                 if (number < 0)
-                {
                     negativeNumbers += $" {number}";
-                }
-            }
-            if (negativeNumbers.Any())
-            {
-                throw new NegativeException($"negatives not allowed:{negativeNumbers}");
-            }
+            if (negativeNumbers.Any()) throw new NegativeException($"negatives not allowed:{negativeNumbers}");
         }
     }
 }
