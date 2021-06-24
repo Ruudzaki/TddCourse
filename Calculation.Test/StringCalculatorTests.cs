@@ -104,7 +104,8 @@ namespace Calculation.Test
         [TestCase("")]
         [TestCase("1")]
         [TestCase("1,1")]
-        public void AddOccured_Add_EventRaisedWithInputAndResult(string input)
+        [TestCase("//.\n1.2.3")]
+        public void AddOccurred_Add_EventRaisedWithInputAndResult(string input)
         {
             var stringCalculator = CreateCalc();
 

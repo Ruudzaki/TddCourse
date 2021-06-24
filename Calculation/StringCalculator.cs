@@ -13,19 +13,23 @@ namespace Calculation
 
         public event Action<string, int> AddOccurred;
 
+        public StringCalculator()
+        {
+            InitDefaultDelimiters();
+        }
+
         public int Add(string numbers)
         {
             count++;
-            InitDefaultDelimiters();
-
+            
             if (HasNoNumber(numbers))
             {
                 AddOccurred?.Invoke(numbers, DEFAULT_VALUE);
                 return DEFAULT_VALUE;
             }
 
-            numbers = GetAndCutDelimiterFromString(numbers);
-            var formattedNumbers = ConvertStringArrayToIntArray(SplitStringByDelimiters(numbers));
+            var cutNumbers = GetAndCutDelimiterFromString(numbers);
+            var formattedNumbers = ConvertStringArrayToIntArray(SplitStringByDelimiters(cutNumbers));
             CheckForNegativeNumbers(formattedNumbers);
 
             var sum = Sum(formattedNumbers);
