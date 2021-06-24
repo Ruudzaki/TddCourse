@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Calculation.CustomExceptions;
 
@@ -8,13 +9,14 @@ namespace Calculation
     {
         private const int DEFAULT_VALUE = 0;
         private int count = 0;
-        private char separator = ',';
+        private HashSet<char> delimiters = new HashSet<char>();
 
         public event Action<string, int> AddOccurred;
 
         public int Add(string numbers)
         {
             count++;
+            InitDefaultDelimiters();
 
             if (HasNoNumber(numbers))
             {
@@ -23,7 +25,7 @@ namespace Calculation
             }
 
             numbers = GetAndCutDelimiterFromString(numbers);
-            var formattedNumbers = ConvertStringToInt(SplitStringByDelimiter(numbers));
+            var formattedNumbers = ConvertStringArrayToIntArray(SplitStringByDelimiters(numbers));
             CheckForNegativeNumbers(formattedNumbers);
 
             var sum = Sum(formattedNumbers);
@@ -32,12 +34,19 @@ namespace Calculation
             return sum;
         }
 
+        private void InitDefaultDelimiters()
+        {
+            delimiters.Add(',');
+            delimiters.Add(';');
+            delimiters.Add('\n');
+        }
+
         public int GetCalledCount()
         {
             return count;
         }
 
-        private int[] ConvertStringToInt(string[] numbers)
+        private int[] ConvertStringArrayToIntArray(string[] numbers)
         {
             return Array.ConvertAll(numbers, ParseNumberFromString);
         }
@@ -54,12 +63,12 @@ namespace Calculation
             return sum;
         }
 
-        private string[] SplitStringByDelimiter(string numbers)
+        private string[] SplitStringByDelimiters(string numbers)
         {
             string[] splitNumbers;
             if (HasDelimiter(numbers))
             {
-                splitNumbers = numbers.Split(separator, '\n');
+                splitNumbers = numbers.Split(delimiters.ToArray());
             }
             else
             {
@@ -76,7 +85,7 @@ namespace Calculation
 
         private bool HasDelimiter(string numbers)
         {
-            return numbers.Contains(separator) || numbers.Contains('\n');
+            return delimiters.Any(numbers.Contains);
         }
 
         private bool HasNoNumber(string numbers)
@@ -88,7 +97,7 @@ namespace Calculation
         {
             if (numbers.StartsWith("//"))
             {
-                separator = numbers[2];
+                delimiters.Add(numbers[2]);
                 return numbers.Substring(4);
             }
 
