@@ -1,4 +1,5 @@
-﻿using Calculation.CustomExceptions;
+﻿using System;
+using Calculation.CustomExceptions;
 using NUnit.Framework;
 
 namespace Calculation.Test
@@ -6,15 +7,32 @@ namespace Calculation.Test
     [TestFixture]
     public class StringCalculatorTests
     {
-        private StringCalculator CreateCalc()
+        private StringCalculator CreateEnabledCalc()
         {
-            return new();
+            var logger = new FakeLogger();
+            return new(new FakeSettings(true), logger);
+        }
+        private StringCalculator CreateEnabledCalc(ILogger logger)
+        {
+            return new(new FakeSettings(true), logger);
+        }
+
+        private StringCalculator CreateEnabledCalc(int maxUses)
+        {
+            var logger = new FakeLogger();
+            return new(new FakeSettings(true, maxUses), logger);
+        }
+
+        private StringCalculator CreateDisabledCalc()
+        {
+            var logger = new FakeLogger();
+            return new(new FakeSettings(false), logger);
         }
 
         [Test]
         public void Add_EmptyString_ReturnsDefaultValue()
         {
-            var stringCalculator = CreateCalc();
+            var stringCalculator = CreateEnabledCalc();
 
             var result = stringCalculator.Add("");
 
@@ -25,7 +43,7 @@ namespace Calculation.Test
         [TestCase("2", ExpectedResult = 2)]
         public int Add_SingleNumber_ReturnsThatNumber(string input)
         {
-            var stringCalculator = CreateCalc();
+            var stringCalculator = CreateEnabledCalc();
 
             return stringCalculator.Add(input);
         }
@@ -34,7 +52,7 @@ namespace Calculation.Test
         [TestCase("1,3", ExpectedResult = 4)]
         public int Add_TwoNumbers_ReturnsSum(string input)
         {
-            var stringCalculator = CreateCalc();
+            var stringCalculator = CreateEnabledCalc();
 
             return stringCalculator.Add(input);
         }
@@ -43,7 +61,7 @@ namespace Calculation.Test
         [TestCase("1,2,3,4", ExpectedResult = 10)]
         public int Add_SeveralNumbers_ReturnsSum(string input)
         {
-            var stringCalculator = CreateCalc();
+            var stringCalculator = CreateEnabledCalc();
 
             return stringCalculator.Add(input);
         }
@@ -51,7 +69,7 @@ namespace Calculation.Test
         [TestCase("1\n2,3", ExpectedResult = 6)]
         public int Add_SeveralNumbersWithNewLineSeparator_ReturnsSum(string input)
         {
-            var stringCalculator = CreateCalc();
+            var stringCalculator = CreateEnabledCalc();
 
             return stringCalculator.Add(input);
         }
@@ -60,7 +78,7 @@ namespace Calculation.Test
         [TestCase("//.\n1.2.3", ExpectedResult = 6)]
         public int Add_CustomDelimiter_ReturnsSum(string input)
         {
-            var stringCalculator = CreateCalc();
+            var stringCalculator = CreateEnabledCalc();
 
             return stringCalculator.Add(input);
         }
@@ -69,7 +87,7 @@ namespace Calculation.Test
         [TestCase("-2")]
         public void Add_NegativeNumber_ThrowsExceptionWithNegativeNumberInMessage(string input)
         {
-            var stringCalculator = CreateCalc();
+            var stringCalculator = CreateEnabledCalc();
 
             var e = Assert.Catch<NegativeException>(() => stringCalculator.Add(input));
             StringAssert.Contains($"negatives not allowed: {input}", e.Message);
@@ -81,7 +99,7 @@ namespace Calculation.Test
         public void Add_SeveralNegativeNumbers_ThrowsExceptionWithNegativeNumbersInMessage(string input,
             string expected)
         {
-            var stringCalculator = CreateCalc();
+            var stringCalculator = CreateEnabledCalc();
 
             var e = Assert.Catch<NegativeException>(() => stringCalculator.Add(input));
             StringAssert.Contains($"negatives not allowed: {expected}", e.Message);
@@ -90,7 +108,7 @@ namespace Calculation.Test
         [TestCase("1,1")]
         public void GetCalledCount_RaisedNumberOfAdd_ReturnsCount(string input)
         {
-            var stringCalculator = CreateCalc();
+            var stringCalculator = CreateEnabledCalc();
             Assert.AreEqual(0, stringCalculator.GetCalledCount());
 
             stringCalculator.Add(input);
@@ -107,7 +125,7 @@ namespace Calculation.Test
         [TestCase("//.\n1.2.3")]
         public void AddOccurred_Add_EventRaisedWithInputAndResult(string input)
         {
-            var stringCalculator = CreateCalc();
+            var stringCalculator = CreateEnabledCalc();
 
             string givenInput = null;
             var givenResult = 0;
@@ -121,6 +139,35 @@ namespace Calculation.Test
 
             Assert.AreEqual(input, givenInput);
             Assert.AreEqual(result, givenResult);
+        }
+
+        [Test]
+        public void Add_DisableThrow_ThrowsException()
+        {
+            var sc = CreateDisabledCalc();
+
+            var e = Assert.Catch<Exception>(() => sc.Add(""));
+            StringAssert.Contains("String calculator is disabled", e.Message);
+        }
+
+        [Test]
+        public void Add_CountMoreThanMaxUses_ThrowsException()
+        {
+            var sc = CreateEnabledCalc(0);
+            
+            var e = Assert.Catch<Exception>(() => sc.Add(""));
+        }
+
+        [TestCase("0","0")]
+        [TestCase("1,2", "3")]
+        public void Add_Logger_LogSum(string input, string expected)
+        {
+            var logger = new FakeLogger();
+            var sc = CreateEnabledCalc(logger);
+
+            sc.Add(input);
+
+            Assert.AreEqual(expected, logger.LastResult);
         }
     }
 }

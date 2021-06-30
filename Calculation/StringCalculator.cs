@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security;
 using Calculation.CustomExceptions;
 
 namespace Calculation
@@ -12,19 +13,36 @@ namespace Calculation
         private readonly HashSet<char> delimiters = new();
 
         public event Action<string, int> AddOccurred;
+        public event Action<string> LogErrorOccurred;
 
-        public StringCalculator()
+        private ISetting _setting;
+        private ILogger _logger;
+
+        public StringCalculator(ISetting setting, ILogger logger)
         {
             InitDefaultDelimiters();
+            _setting = setting;
+            _logger = logger;
         }
 
         public int Add(string numbers)
         {
             count++;
-            
+
+            if (!_setting.IsEnabled())
+            {
+                throw new Exception("String calculator is disabled");
+            }
+
+            if (count>_setting.MaxUses())
+            {
+                throw new Exception("Too many uses");
+            }
+
             if (HasNoNumber(numbers))
             {
                 AddOccurred?.Invoke(numbers, DEFAULT_VALUE);
+                _logger.Write(DEFAULT_VALUE.ToString());
                 return DEFAULT_VALUE;
             }
 
@@ -35,6 +53,7 @@ namespace Calculation
             var sum = Sum(formattedNumbers);
 
             AddOccurred?.Invoke(numbers, sum);
+            _logger.Write(sum.ToString());
             return sum;
         }
 
